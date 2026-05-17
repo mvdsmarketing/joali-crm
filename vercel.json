@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/Joali - Gestión de clientes.html" }
+  ]
+}
