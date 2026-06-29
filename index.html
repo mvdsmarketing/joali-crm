@@ -343,11 +343,10 @@ html,body{height:100%;font-family:var(--f);background:var(--bg);color:var(--t1);
               <div class="card"><div class="card-h"><i class="ti ti-eyeglass"></i><span class="card-t">Detalles del armazón</span></div><div class="card-b">
                 <div class="frow fr3"><div class="field"><label>Diseño</label><input type="text" id="a-diseno"></div><div class="field"><label>Calibre</label><input type="text" id="a-calibre"></div><div class="field"><label>Puente</label><input type="text" id="a-puente"></div></div>
                 <div class="frow fr3"><div class="field"><label>Diagonal</label><input type="text" id="a-diagonal"></div><div class="field"><label>Altura</label><input type="text" id="a-altura"></div><div class="field"><label>Modelo</label><input type="text" id="a-modelo"></div></div>
-                <div class="frow fr2"><div class="field"><label>Material</label><input type="text" id="a-material"></div><div class="field"><label>Tratamiento</label><input type="text" id="a-tratamiento"></div></div>
               </div></div>
-              <div class="card"><div class="card-h"><i class="ti ti-flask"></i><span class="card-t">Laboratorio y observaciones</span></div><div class="card-b">
-                <div class="frow"><div class="field"><label>Laboratorio</label><input type="text" id="a-laboratorio"></div></div>
-                <div class="frow"><div class="field"><label>Observaciones</label><input type="text" id="a-observaciones"></div></div>
+              <div class="card"><div class="card-h"><i class="ti ti-lens"></i><span class="card-t">Cristales</span></div><div class="card-b">
+                <div class="frow fr2"><div class="field"><label>Material</label><input type="text" id="a-material"></div><div class="field"><label>Tratamiento</label><input type="text" id="a-tratamiento"></div></div>
+                <div class="frow fr2"><div class="field"><label>Laboratorio</label><input type="text" id="a-laboratorio"></div><div class="field"><label>Observaciones</label><input type="text" id="a-observaciones"></div></div>
               </div></div>
             </div>
             <!-- TAB PAGOS -->
@@ -369,6 +368,8 @@ html,body{height:100%;font-family:var(--f);background:var(--bg);color:var(--t1);
                     </select>
                   </div>
                 </div>
+                <div class="mr"><div class="ml">Precio armazón</div><span class="ms">$</span><input class="mi" type="number" id="p-precio-armazon" placeholder="0" inputmode="decimal" oninput="calcTotal()"></div>
+                <div class="mr"><div class="ml">Precio cristales</div><span class="ms">$</span><input class="mi" type="number" id="p-precio-cristal" placeholder="0" inputmode="decimal" oninput="calcTotal()"></div>
                 <div class="mr"><div class="ml">Total de venta</div><span class="ms">$</span><input class="mi" type="number" id="p-total" placeholder="0" inputmode="decimal" oninput="calcSaldo()"></div>
                 <div class="mr"><div class="ml">Seña cobrada</div><span class="ms">$</span><input class="mi" type="number" id="p-senia" placeholder="0" inputmode="decimal" oninput="calcSaldo()"></div>
                 <div class="tb"><div class="ttr hl"><span>Saldo pendiente</span><span id="tot-saldo">$ 0</span></div></div>
@@ -598,6 +599,12 @@ function renderList(filter=''){
 function filterList(v){renderList(v);}
 function switchTab(el,id){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');['tab-datos','tab-receta','tab-armazon','tab-pagos'].forEach(t=>{gi(t).style.display=t===id?'block':'none';});}
 function setLente(v){tipoLente=v;['lejos','cerca','bifocal','multifocal'].forEach(l=>gi('lente-'+l).classList.toggle('sel',l===v));}
+function calcTotal(){
+  const arm=parseFloat(gi('p-precio-armazon').value)||0;
+  const cris=parseFloat(gi('p-precio-cristal').value)||0;
+  if(arm||cris){gi('p-total').value=String(arm+cris);}
+  calcSaldo();
+}
 function calcSaldo(){const t=parseFloat(gi('p-total').value)||0,s=parseFloat(gi('p-senia').value)||0;gi('tot-saldo').textContent='$ '+Math.max(0,t-s).toLocaleString('es-UY');}
 
 function fromRow(r){
@@ -608,7 +615,7 @@ function fromRow(r){
     cerOiEsf:r.cerca_oi_esf,cerOiCil:r.cerca_oi_cil,cerOiEje:r.cerca_oi_eje,cerOiDi:r.cerca_oi_di,cerOiAp:r.cerca_oi_alt_pup,cerOiPar:r.cerca_oi_alt_par,
     armDiseno:r.arm_diseno,armCalibre:r.arm_calibre,armPuente:r.arm_puente,armDiagonal:r.arm_diagonal,armAltura:r.arm_altura,armModelo:r.arm_modelo,armMaterial:r.arm_material,armTratamiento:r.arm_tratamiento,
     laboratorio:r.laboratorio,observaciones:r.observaciones,total:r.total,senia:r.senia,saldo:r.saldo,recibido:r.recibido,prometido:r.prometido,
-    formaPago:r.forma_pago||'',fechaVenta:r.fecha_venta||''};
+    formaPago:r.forma_pago||'',fechaVenta:r.fecha_venta||'',precioArmazon:r.precio_armazon||'',precioCristal:r.precio_cristal||'',cristalMaterial:r.cristal_material||'',cristalTratamiento:r.cristal_tratamiento||'',cristalLaboratorio:r.cristal_laboratorio||'',cristalObservaciones:r.cristal_observaciones||''};
 }
 function dbRow(c){
   return{nombre:c.nombre||'',ci:c.ci||'',tel:c.tel||'',cel:c.cel||'',dir:c.dir||'',f_nac:c.fNac||'',doc_cp:c.docCp||'',n_ficha:c.nFicha||'',
@@ -619,7 +626,7 @@ function dbRow(c){
     cerca_oi_esf:c.cerOiEsf||'',cerca_oi_cil:c.cerOiCil||'',cerca_oi_eje:c.cerOiEje||'',cerca_oi_di:c.cerOiDi||'',cerca_oi_alt_pup:c.cerOiAp||'',cerca_oi_alt_par:c.cerOiPar||'',
     arm_diseno:c.armDiseno||'',arm_calibre:c.armCalibre||'',arm_puente:c.armPuente||'',arm_diagonal:c.armDiagonal||'',arm_altura:c.armAltura||'',arm_modelo:c.armModelo||'',arm_material:c.armMaterial||'',arm_tratamiento:c.armTratamiento||'',
     laboratorio:c.laboratorio||'',observaciones:c.observaciones||'',total:c.total||'',senia:c.senia||'',saldo:c.saldo||'',recibido:c.recibido||'',prometido:c.prometido||'',
-    forma_pago:c.formaPago||'',fecha_venta:c.fechaVenta||null};
+    forma_pago:c.formaPago||'',fecha_venta:c.fechaVenta||null,precio_armazon:c.precioArmazon||'',precio_cristal:c.precioCristal||'',cristal_material:c.cristalMaterial||'',cristal_tratamiento:c.cristalTratamiento||'',cristal_laboratorio:c.cristalLaboratorio||'',cristal_observaciones:c.cristalObservaciones||''};
 }
 
 function selectClient(id){
@@ -633,10 +640,10 @@ function selectClient(id){
   gi('r-lej-oi-esf').value=c.lejOiEsf||'';gi('r-lej-oi-cil').value=c.lejOiCil||'';gi('r-lej-oi-eje').value=c.lejOiEje||'';gi('r-lej-oi-di').value=c.lejOiDi||'';gi('r-lej-oi-ap').value=c.lejOiAp||'';gi('r-lej-oi-par').value=c.lejOiPar||'';
   gi('r-cer-od-esf').value=c.cerOdEsf||'';gi('r-cer-od-cil').value=c.cerOdCil||'';gi('r-cer-od-eje').value=c.cerOdEje||'';gi('r-cer-od-di').value=c.cerOdDi||'';gi('r-cer-od-ap').value=c.cerOdAp||'';gi('r-cer-od-par').value=c.cerOdPar||'';
   gi('r-cer-oi-esf').value=c.cerOiEsf||'';gi('r-cer-oi-cil').value=c.cerOiCil||'';gi('r-cer-oi-eje').value=c.cerOiEje||'';gi('r-cer-oi-di').value=c.cerOiDi||'';gi('r-cer-oi-ap').value=c.cerOiAp||'';gi('r-cer-oi-par').value=c.cerOiPar||'';
-  gi('a-diseno').value=c.armDiseno||'';gi('a-calibre').value=c.armCalibre||'';gi('a-puente').value=c.armPuente||'';gi('a-diagonal').value=c.armDiagonal||'';gi('a-altura').value=c.armAltura||'';gi('a-modelo').value=c.armModelo||'';gi('a-material').value=c.armMaterial||'';gi('a-tratamiento').value=c.armTratamiento||'';
-  gi('a-laboratorio').value=c.laboratorio||'';gi('a-observaciones').value=c.observaciones||'';
+  gi('a-diseno').value=c.armDiseno||'';gi('a-calibre').value=c.armCalibre||'';gi('a-puente').value=c.armPuente||'';gi('a-diagonal').value=c.armDiagonal||'';gi('a-altura').value=c.armAltura||'';gi('a-modelo').value=c.armModelo||'';
+  gi('a-laboratorio').value=c.cristalLaboratorio||c.laboratorio||'';gi('a-observaciones').value=c.cristalObservaciones||c.observaciones||'';
   gi('p-total').value=c.total||'';gi('p-senia').value=c.senia||'';gi('p-recibido').value=c.recibido||'';gi('p-prometido').value=c.prometido||'';
-  gi('p-forma-pago').value=c.formaPago||'';gi('p-fecha-venta').value=c.fechaVenta||'';
+  gi('p-forma-pago').value=c.formaPago||'';gi('p-fecha-venta').value=c.fechaVenta||'';gi('p-precio-armazon').value=c.precioArmazon||'';gi('p-precio-cristal').value=c.precioCristal||'';gi('a-material').value=c.armMaterial||'';gi('a-tratamiento').value=c.armTratamiento||'';gi('a-laboratorio').value=c.cristalLaboratorio||'';gi('a-observaciones').value=c.cristalObservaciones||'';
   calcSaldo();renderList(gi('searchInput').value);
 }
 
@@ -650,7 +657,7 @@ function readForm(){
     cerOiEsf:gi('r-cer-oi-esf').value,cerOiCil:gi('r-cer-oi-cil').value,cerOiEje:gi('r-cer-oi-eje').value,cerOiDi:gi('r-cer-oi-di').value,cerOiAp:gi('r-cer-oi-ap').value,cerOiPar:gi('r-cer-oi-par').value,
     armDiseno:gi('a-diseno').value,armCalibre:gi('a-calibre').value,armPuente:gi('a-puente').value,armDiagonal:gi('a-diagonal').value,armAltura:gi('a-altura').value,armModelo:gi('a-modelo').value,armMaterial:gi('a-material').value,armTratamiento:gi('a-tratamiento').value,
     laboratorio:gi('a-laboratorio').value,observaciones:gi('a-observaciones').value,total:gi('p-total').value,senia:gi('p-senia').value,saldo:String(Math.max(0,t-s)),recibido:gi('p-recibido').value,prometido:gi('p-prometido').value,
-    formaPago:gi('p-forma-pago').value,fechaVenta:gi('p-fecha-venta').value||null};
+    formaPago:gi('p-forma-pago').value,fechaVenta:gi('p-fecha-venta').value||null,precioArmazon:gi('p-precio-armazon').value,precioCristal:gi('p-precio-cristal').value,cristalMaterial:gi('a-material').value,cristalTratamiento:gi('a-tratamiento').value,cristalLaboratorio:gi('a-laboratorio').value,cristalObservaciones:gi('a-observaciones').value};
 }
 
 function newClient(){
@@ -818,6 +825,7 @@ function renderProvTable(){
     const tr=document.createElement('tr');
     tr.innerHTML=`<td><input class="prov-input" type="text" value="${r.nombre||''}" onchange="provRows[${i}].nombre=this.value"></td>
       <td><input class="prov-input" type="number" value="${r.monto||''}" onchange="provRows[${i}].monto=parseFloat(this.value)||0" style="text-align:right;width:90px"></td>
+      <td><input class="prov-input" type="text" value="${r.nro_factura||''}" onchange="provRows[${i}].nro_factura=this.value" placeholder="N° factura"></td>
       <td><input class="prov-input" type="date" value="${r.fecha_vencimiento||''}" onchange="provRows[${i}].fecha_vencimiento=this.value"></td>
       <td><input class="prov-input" type="date" value="${r.fecha_pago||''}" onchange="provRows[${i}].fecha_pago=this.value;provRows[${i}].pagado=!!this.value;renderProvTable()"></td>
       <td>${badge}</td>
@@ -828,7 +836,7 @@ function renderProvTable(){
 
 function addProvRow(){
   const mes=gi('prov-mes').value,anio=parseInt(gi('prov-anio').value);
-  provRows.push({id:'__new__'+Date.now(),nombre:'',mes,anio,monto:0,fecha_vencimiento:null,fecha_pago:null,pagado:false});
+  provRows.push({id:'__new__'+Date.now(),nombre:'',mes,anio,monto:0,nro_factura:'',fecha_vencimiento:null,fecha_pago:null,pagado:false});
   renderProvTable();gi('provEmpty').style.display='none';
 }
 function removeProvRow(i){provRows.splice(i,1);renderProvTable();}
@@ -837,7 +845,7 @@ async function saveProveedores(){
   const mes=gi('prov-mes').value,anio=parseInt(gi('prov-anio').value);
   showLoading('Guardando...');
   for(const r of provRows){
-    const data={nombre:r.nombre||'Sin nombre',mes,anio,monto:r.monto||0,fecha_vencimiento:r.fecha_vencimiento||null,fecha_pago:r.fecha_pago||null,pagado:r.pagado||false};
+    const data={nombre:r.nombre||'Sin nombre',mes,anio,monto:r.monto||0,nro_factura:r.nro_factura||'',fecha_vencimiento:r.fecha_vencimiento||null,fecha_pago:r.fecha_pago||null,pagado:r.pagado||false};
     if(r.id&&!String(r.id).startsWith('__new__'))await supa(`proveedores?id=eq.${r.id}`,'PATCH',data);
     else await supa('proveedores','POST',data);
   }
