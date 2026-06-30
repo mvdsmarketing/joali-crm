@@ -260,7 +260,16 @@ html,body{height:100%;font-family:var(--f);background:var(--bg);color:var(--t1);
     <div class="dash">
       <div class="dash-header">
         <div><div class="dash-title">Panel de control</div><div class="dash-sub" id="dash-fecha"></div></div>
-        <button class="abt" onclick="loadDashboard()" style="margin-left:auto"><i class="ti ti-refresh"></i> Actualizar</button>
+        <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+          <select class="prov-select" id="dash-mes" onchange="loadDashboard()">
+            <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+            <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+            <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+          </select>
+          <select class="prov-select" id="dash-anio" onchange="loadDashboard()"></select>
+          <button class="abt" onclick="loadDashboard()"><i class="ti ti-refresh"></i> Actualizar</button>
+        </div>
       </div>
       <div class="kpi-row">
         <div class="kpi teal"><div class="kpi-lbl">Ventas hoy</div><div class="kpi-val" id="kpi-hoy">$ 0</div><div class="kpi-sub" id="kpi-hoy-n">0 clientes</div></div>
@@ -561,30 +570,44 @@ let chartDia=null,chartPago=null,dashPeriod='semana';
 
 async function loadDashboard(){
   const now=new Date();
-  gi('dash-fecha').textContent=now.toLocaleDateString('es-UY',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  const mes=now.getMonth()+1,anio=now.getFullYear();
-  const mesStr=String(mes).padStart(2,'0');
   const hoy=now.toISOString().split('T')[0];
+  const mes=parseInt(gi('dash-mes').value)||(now.getMonth()+1);
+  const anio=parseInt(gi('dash-anio').value)||now.getFullYear();
+  const esMesActual=(mes===now.getMonth()+1&&anio===now.getFullYear());
+  gi('dash-fecha').textContent=esMesActual?now.toLocaleDateString('es-UY',{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'Viendo histórico de '+MESES[mes-1]+' '+anio;
+  const mesStr=String(mes).padStart(2,'0');
   const ultimoDia=new Date(anio,mes,0).getDate();
   const [ventasMes,cierresMes]=await Promise.all([
     supa(`clientes?and=(fecha_venta.gte.${anio}-${mesStr}-01,fecha_venta.lte.${anio}-${mesStr}-${String(ultimoDia).padStart(2,'0')})&select=fecha_venta,total,forma_pago,forma_pago_2,monto_pago_2`),
     supa(`cierres?and=(fecha.gte.${anio}-${mesStr}-01,fecha.lte.${anio}-${mesStr}-${String(ultimoDia).padStart(2,'0')})&select=fecha,gastos_caja`)
   ]);
   const vm=ventasMes||[],cm=cierresMes||[];
-  const ventasHoy=vm.filter(v=>v.fecha_venta===hoy);
+  const ventasHoy=esMesActual?vm.filter(v=>v.fecha_venta===hoy):[];
   const ingHoy=ventasHoy.reduce((s,v)=>s+(parseFloat(v.total)||0),0);
   const ingMes=vm.reduce((s,v)=>s+(parseFloat(v.total)||0),0);
   const gasMes=cm.reduce((s,c)=>s+(parseFloat(c.gastos_caja)||0),0);
   gi('kpi-hoy').textContent=fmt(ingHoy);
-  gi('kpi-hoy-n').textContent=ventasHoy.length+' venta'+(ventasHoy.length!==1?'s':'');
+  gi('kpi-hoy-n').textContent=esMesActual?(ventasHoy.length+' venta'+(ventasHoy.length!==1?'s':'')):'No es el mes actual';
   gi('kpi-mes').textContent=fmt(ingMes);
   gi('kpi-mes-sub').textContent=MESES[mes-1]+' '+anio;
   gi('kpi-gastos').textContent=fmt(gasMes);
   const bal=ingMes-gasMes;
   gi('kpi-balance').textContent=fmt(bal);
   gi('kpi-balance').style.color=bal>=0?'var(--ok)':'var(--danger)';
-  renderCharts(vm,cm,dashPeriod,now);
+  if(!esMesActual&&dashPeriod==='semana'){
+    dashPeriod='mes';
+    document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.period-btn')[1].classList.add('active');
+  }
+  renderCharts(vm,cm,dashPeriod,new Date(anio,mes-1,esMesActual?now.getDate():ultimoDia));
   loadProvPendientes(mes,anio);
+}
+
+function initDashSelectors(){
+  const now=new Date();
+  gi('dash-mes').value=String(now.getMonth()+1);
+  const sel=gi('dash-anio');
+  for(let y=now.getFullYear()+1;y>=2024;y--){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===now.getFullYear())o.selected=true;sel.appendChild(o);}
 }
 
 function setPeriod(p,btn){dashPeriod=p;document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');loadDashboard();}
@@ -956,6 +979,7 @@ checkAuth();
 /* ══ INIT ══ */
 async function init(){
   initProvAnios();
+  initDashSelectors();
   showLoading('Conectando...');
   const rows=await supa('clientes?order=created_at.asc');
   hideLoading();
