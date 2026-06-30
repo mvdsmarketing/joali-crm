@@ -528,9 +528,10 @@ async function loadDashboard(){
   const mes=now.getMonth()+1,anio=now.getFullYear();
   const mesStr=String(mes).padStart(2,'0');
   const hoy=now.toISOString().split('T')[0];
+  const ultimoDia=new Date(anio,mes,0).getDate();
   const [ventasMes,cierresMes]=await Promise.all([
-    supa(`clientes?and=(fecha_venta.gte.${anio}-${mesStr}-01,fecha_venta.lte.${anio}-${mesStr}-31)&select=fecha_venta,total,forma_pago`),
-    supa(`cierres?and=(fecha.gte.${anio}-${mesStr}-01,fecha.lte.${anio}-${mesStr}-31)&select=fecha,gastos_caja`)
+    supa(`clientes?and=(fecha_venta.gte.${anio}-${mesStr}-01,fecha_venta.lte.${anio}-${mesStr}-${String(ultimoDia).padStart(2,'0')})&select=fecha_venta,total,forma_pago`),
+    supa(`cierres?and=(fecha.gte.${anio}-${mesStr}-01,fecha.lte.${anio}-${mesStr}-${String(ultimoDia).padStart(2,'0')})&select=fecha,gastos_caja`)
   ]);
   const vm=ventasMes||[],cm=cierresMes||[];
   const ventasHoy=vm.filter(v=>v.fecha_venta===hoy);
