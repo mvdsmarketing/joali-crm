@@ -325,6 +325,9 @@ html,body{height:100%;font-family:var(--f);background:var(--bg);color:var(--t1);
             </div>
             <!-- TAB RECETA -->
             <div id="tab-receta" style="display:none">
+              <div class="card"><div class="card-h"><i class="ti ti-calendar"></i><span class="card-t">Fecha de la receta</span></div><div class="card-b">
+                <div class="frow"><div class="field"><label>Fecha</label><input type="date" id="r-fecha-receta" style="background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r1);padding:8px 10px;font-size:13px;color:var(--t1);font-family:var(--f);outline:none"></div></div>
+              </div></div>
               <div class="card"><div class="card-h"><i class="ti ti-eye"></i><span class="card-t">Tipo de lente</span></div><div class="card-b">
                 <div class="lente-grid"><button class="lente-btn" onclick="setLente('lejos')" id="lente-lejos">Lejos</button><button class="lente-btn" onclick="setLente('cerca')" id="lente-cerca">Cerca</button><button class="lente-btn" onclick="setLente('bifocal')" id="lente-bifocal">Bifocal</button><button class="lente-btn" onclick="setLente('multifocal')" id="lente-multifocal">Multifocal</button></div>
               </div></div>
@@ -354,6 +357,9 @@ html,body{height:100%;font-family:var(--f);background:var(--bg);color:var(--t1);
               <div class="card"><div class="card-h"><i class="ti ti-coin"></i><span class="card-t">Venta y pago</span></div><div class="card-b">
                 <div class="frow fr2">
                   <div class="field"><label>Fecha de venta</label><input type="date" id="p-fecha-venta" style="background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r1);padding:8px 10px;font-size:13px;color:var(--t1);font-family:var(--f);outline:none"></div>
+                  <div class="field"><label>Fecha de factura</label><input type="date" id="p-fecha-factura" style="background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r1);padding:8px 10px;font-size:13px;color:var(--t1);font-family:var(--f);outline:none"></div>
+                </div>
+                <div class="frow">
                   <div class="field"><label>Forma de pago</label>
                     <select id="p-forma-pago">
                       <option value="">Seleccionar...</option>
@@ -370,6 +376,14 @@ html,body{height:100%;font-family:var(--f);background:var(--bg);color:var(--t1);
                 </div>
                 <div class="mr"><div class="ml">Precio armazón</div><span class="ms">$</span><input class="mi" type="number" id="p-precio-armazon" placeholder="0" inputmode="decimal" oninput="calcTotal()"></div>
                 <div class="mr"><div class="ml">Precio cristales</div><span class="ms">$</span><input class="mi" type="number" id="p-precio-cristal" placeholder="0" inputmode="decimal" oninput="calcTotal()"></div>
+              </div></div>
+              <div class="card"><div class="card-h"><i class="ti ti-glasses"></i><span class="card-t">Accesorios</span></div><div class="card-b">
+                <div class="frow fr2"><div class="field"><label>Tipo de accesorio</label><input type="text" id="p-accesorio-tipo" placeholder="Ej: estuche, paño..."></div><div class="field"><label>Monto</label><input class="num-input" type="number" id="p-accesorio-monto" placeholder="0" oninput="calcTotal()"></div></div>
+              </div></div>
+              <div class="card"><div class="card-h"><i class="ti ti-discount-2"></i><span class="card-t">Descuento</span></div><div class="card-b">
+                <div class="frow fr2"><div class="field"><label>Descripción del descuento</label><input type="text" id="p-descuento-desc" placeholder="Ej: descuento por convenio"></div><div class="field"><label>Porcentaje (%)</label><input class="num-input" type="number" id="p-descuento-pct" placeholder="0" oninput="calcTotal()"></div></div>
+              </div></div>
+              <div class="card"><div class="card-h"><i class="ti ti-coin"></i><span class="card-t">Total y seña</span></div><div class="card-b">
                 <div class="mr"><div class="ml">Total de venta</div><span class="ms">$</span><input class="mi" type="number" id="p-total" placeholder="0" inputmode="decimal" oninput="calcSaldo()"></div>
                 <div class="mr"><div class="ml">Seña cobrada</div><span class="ms">$</span><input class="mi" type="number" id="p-senia" placeholder="0" inputmode="decimal" oninput="calcSaldo()"></div>
                 <div class="tb"><div class="ttr hl"><span>Saldo pendiente</span><span id="tot-saldo">$ 0</span></div></div>
@@ -602,7 +616,11 @@ function setLente(v){tipoLente=v;['lejos','cerca','bifocal','multifocal'].forEac
 function calcTotal(){
   const arm=parseFloat(gi('p-precio-armazon').value)||0;
   const cris=parseFloat(gi('p-precio-cristal').value)||0;
-  if(arm||cris){gi('p-total').value=String(arm+cris);}
+  const acc=parseFloat(gi('p-accesorio-monto').value)||0;
+  const pct=parseFloat(gi('p-descuento-pct').value)||0;
+  const subtotal=arm+cris+acc;
+  const conDescuento=subtotal-(subtotal*pct/100);
+  if(arm||cris||acc||pct){gi('p-total').value=String(Math.round(conDescuento));}
   calcSaldo();
 }
 function calcSaldo(){const t=parseFloat(gi('p-total').value)||0,s=parseFloat(gi('p-senia').value)||0;gi('tot-saldo').textContent='$ '+Math.max(0,t-s).toLocaleString('es-UY');}
@@ -615,7 +633,7 @@ function fromRow(r){
     cerOiEsf:r.cerca_oi_esf,cerOiCil:r.cerca_oi_cil,cerOiEje:r.cerca_oi_eje,cerOiDi:r.cerca_oi_di,cerOiAp:r.cerca_oi_alt_pup,cerOiPar:r.cerca_oi_alt_par,
     armDiseno:r.arm_diseno,armCalibre:r.arm_calibre,armPuente:r.arm_puente,armDiagonal:r.arm_diagonal,armAltura:r.arm_altura,armModelo:r.arm_modelo,armMaterial:r.arm_material,armTratamiento:r.arm_tratamiento,
     laboratorio:r.laboratorio,observaciones:r.observaciones,total:r.total,senia:r.senia,saldo:r.saldo,recibido:r.recibido,prometido:r.prometido,
-    formaPago:r.forma_pago||'',fechaVenta:r.fecha_venta||'',precioArmazon:r.precio_armazon||'',precioCristal:r.precio_cristal||'',cristalMaterial:r.cristal_material||'',cristalTratamiento:r.cristal_tratamiento||'',cristalLaboratorio:r.cristal_laboratorio||'',cristalObservaciones:r.cristal_observaciones||''};
+    formaPago:r.forma_pago||'',fechaVenta:r.fecha_venta||'',precioArmazon:r.precio_armazon||'',precioCristal:r.precio_cristal||'',cristalMaterial:r.cristal_material||'',cristalTratamiento:r.cristal_tratamiento||'',cristalLaboratorio:r.cristal_laboratorio||'',cristalObservaciones:r.cristal_observaciones||'',descuentoDesc:r.descuento_desc||'',descuentoPct:r.descuento_pct||'',accesorioTipo:r.accesorio_tipo||'',accesorioMonto:r.accesorio_monto||'',fechaReceta:r.fecha_receta||'',fechaFactura:r.fecha_factura||''};
 }
 function dbRow(c){
   return{nombre:c.nombre||'',ci:c.ci||'',tel:c.tel||'',cel:c.cel||'',dir:c.dir||'',f_nac:c.fNac||'',doc_cp:c.docCp||'',n_ficha:c.nFicha||'',
@@ -626,7 +644,7 @@ function dbRow(c){
     cerca_oi_esf:c.cerOiEsf||'',cerca_oi_cil:c.cerOiCil||'',cerca_oi_eje:c.cerOiEje||'',cerca_oi_di:c.cerOiDi||'',cerca_oi_alt_pup:c.cerOiAp||'',cerca_oi_alt_par:c.cerOiPar||'',
     arm_diseno:c.armDiseno||'',arm_calibre:c.armCalibre||'',arm_puente:c.armPuente||'',arm_diagonal:c.armDiagonal||'',arm_altura:c.armAltura||'',arm_modelo:c.armModelo||'',arm_material:c.armMaterial||'',arm_tratamiento:c.armTratamiento||'',
     laboratorio:c.laboratorio||'',observaciones:c.observaciones||'',total:c.total||'',senia:c.senia||'',saldo:c.saldo||'',recibido:c.recibido||'',prometido:c.prometido||'',
-    forma_pago:c.formaPago||'',fecha_venta:c.fechaVenta||null,precio_armazon:c.precioArmazon||'',precio_cristal:c.precioCristal||'',cristal_material:c.cristalMaterial||'',cristal_tratamiento:c.cristalTratamiento||'',cristal_laboratorio:c.cristalLaboratorio||'',cristal_observaciones:c.cristalObservaciones||''};
+    forma_pago:c.formaPago||'',fecha_venta:c.fechaVenta||null,precio_armazon:c.precioArmazon||'',precio_cristal:c.precioCristal||'',cristal_material:c.cristalMaterial||'',cristal_tratamiento:c.cristalTratamiento||'',cristal_laboratorio:c.cristalLaboratorio||'',cristal_observaciones:c.cristalObservaciones||'',descuento_desc:c.descuentoDesc||'',descuento_pct:c.descuentoPct||'',accesorio_tipo:c.accesorioTipo||'',accesorio_monto:c.accesorioMonto||'',fecha_receta:c.fechaReceta||null,fecha_factura:c.fechaFactura||null};
 }
 
 function selectClient(id){
@@ -643,7 +661,7 @@ function selectClient(id){
   gi('a-diseno').value=c.armDiseno||'';gi('a-calibre').value=c.armCalibre||'';gi('a-puente').value=c.armPuente||'';gi('a-diagonal').value=c.armDiagonal||'';gi('a-altura').value=c.armAltura||'';gi('a-modelo').value=c.armModelo||'';
   gi('a-laboratorio').value=c.cristalLaboratorio||c.laboratorio||'';gi('a-observaciones').value=c.cristalObservaciones||c.observaciones||'';
   gi('p-total').value=c.total||'';gi('p-senia').value=c.senia||'';gi('p-recibido').value=c.recibido||'';gi('p-prometido').value=c.prometido||'';
-  gi('p-forma-pago').value=c.formaPago||'';gi('p-fecha-venta').value=c.fechaVenta||'';gi('p-precio-armazon').value=c.precioArmazon||'';gi('p-precio-cristal').value=c.precioCristal||'';gi('a-material').value=c.armMaterial||'';gi('a-tratamiento').value=c.armTratamiento||'';gi('a-laboratorio').value=c.cristalLaboratorio||'';gi('a-observaciones').value=c.cristalObservaciones||'';
+  gi('p-forma-pago').value=c.formaPago||'';gi('p-fecha-venta').value=c.fechaVenta||'';gi('p-fecha-factura').value=c.fechaFactura||'';gi('p-precio-armazon').value=c.precioArmazon||'';gi('p-precio-cristal').value=c.precioCristal||'';gi('a-material').value=c.armMaterial||'';gi('a-tratamiento').value=c.armTratamiento||'';gi('a-laboratorio').value=c.cristalLaboratorio||'';gi('a-observaciones').value=c.cristalObservaciones||'';gi('p-accesorio-tipo').value=c.accesorioTipo||'';gi('p-accesorio-monto').value=c.accesorioMonto||'';gi('p-descuento-desc').value=c.descuentoDesc||'';gi('p-descuento-pct').value=c.descuentoPct||'';gi('r-fecha-receta').value=c.fechaReceta||'';
   calcSaldo();renderList(gi('searchInput').value);
 }
 
@@ -657,7 +675,7 @@ function readForm(){
     cerOiEsf:gi('r-cer-oi-esf').value,cerOiCil:gi('r-cer-oi-cil').value,cerOiEje:gi('r-cer-oi-eje').value,cerOiDi:gi('r-cer-oi-di').value,cerOiAp:gi('r-cer-oi-ap').value,cerOiPar:gi('r-cer-oi-par').value,
     armDiseno:gi('a-diseno').value,armCalibre:gi('a-calibre').value,armPuente:gi('a-puente').value,armDiagonal:gi('a-diagonal').value,armAltura:gi('a-altura').value,armModelo:gi('a-modelo').value,armMaterial:gi('a-material').value,armTratamiento:gi('a-tratamiento').value,
     laboratorio:gi('a-laboratorio').value,observaciones:gi('a-observaciones').value,total:gi('p-total').value,senia:gi('p-senia').value,saldo:String(Math.max(0,t-s)),recibido:gi('p-recibido').value,prometido:gi('p-prometido').value,
-    formaPago:gi('p-forma-pago').value,fechaVenta:gi('p-fecha-venta').value||null,precioArmazon:gi('p-precio-armazon').value,precioCristal:gi('p-precio-cristal').value,cristalMaterial:gi('a-material').value,cristalTratamiento:gi('a-tratamiento').value,cristalLaboratorio:gi('a-laboratorio').value,cristalObservaciones:gi('a-observaciones').value};
+    formaPago:gi('p-forma-pago').value,fechaVenta:gi('p-fecha-venta').value||null,fechaFactura:gi('p-fecha-factura').value||null,precioArmazon:gi('p-precio-armazon').value,precioCristal:gi('p-precio-cristal').value,cristalMaterial:gi('a-material').value,cristalTratamiento:gi('a-tratamiento').value,cristalLaboratorio:gi('a-laboratorio').value,cristalObservaciones:gi('a-observaciones').value,accesorioTipo:gi('p-accesorio-tipo').value,accesorioMonto:gi('p-accesorio-monto').value,descuentoDesc:gi('p-descuento-desc').value,descuentoPct:gi('p-descuento-pct').value,fechaReceta:gi('r-fecha-receta').value||null};
 }
 
 function newClient(){
@@ -709,7 +727,7 @@ function printClient(){
 </tbody></table>
 <div class="sec-title">Detalles armazón</div><div class="arm-grid">${[['Diseño',m.armDiseno],['Calibre',m.armCalibre],['Puente',m.armPuente],['Diagonal',m.armDiagonal],['Altura',m.armAltura],['Modelo',m.armModelo],['Material',m.armMaterial],['Tratamiento',m.armTratamiento]].map(([l,v])=>`<div class="arm-f"><div class="lbl">${l}:</div><div class="val">${fv(v)}</div></div>`).join('')}</div>
 <div class="fl"><div class="fd"><div class="lbl">Laboratorio:</div><div class="val">${fv(m.laboratorio)}</div></div><div class="fd" style="flex:2"><div class="lbl">Observaciones:</div><div class="val">${fv(m.observaciones)}</div></div></div>
-<div class="pagos"><div class="pagos-l"><div class="pr"><span class="lbl">Forma de pago:</span><div class="val">${fv(m.formaPago)}</div></div><div class="pr"><span class="lbl">Recibido:</span><div class="val">${fv(m.recibido)}</div><span class="sym">$</span></div><div class="pr"><span class="lbl">Prometido:</span><div class="val">${fv(m.prometido)}</div></div></div><div class="totbox"><div class="trow"><span>Total &nbsp;</span><span>$ ${tot.toLocaleString('es-UY')}</span></div><div class="trow"><span>Seña &nbsp;</span><span>$ ${fv(m.senia)}</span></div><div class="trow"><span>Saldo</span><span>$ ${saldo.toLocaleString('es-UY')}</span></div></div></div>
+<div class="pagos"><div class="pagos-l"><div class="pr"><span class="lbl">Forma de pago:</span><div class="val">${fv(m.formaPago)}</div></div><div class="pr"><span class="lbl">Accesorio:</span><div class="val">${fv(m.accesorioTipo)}${m.accesorioMonto?' — $'+fv(m.accesorioMonto):''}</div></div><div class="pr"><span class="lbl">Descuento:</span><div class="val">${m.descuentoPct?fv(m.descuentoPct)+'% — '+fv(m.descuentoDesc):''}</div></div><div class="pr"><span class="lbl">Recibido:</span><div class="val">${fv(m.recibido)}</div><span class="sym">$</span></div><div class="pr"><span class="lbl">Prometido:</span><div class="val">${fv(m.prometido)}</div></div></div><div class="totbox"><div class="trow"><span>Total &nbsp;</span><span>$ ${tot.toLocaleString('es-UY')}</span></div><div class="trow"><span>Seña &nbsp;</span><span>$ ${fv(m.senia)}</span></div><div class="trow"><span>Saldo</span><span>$ ${saldo.toLocaleString('es-UY')}</span></div></div></div>
 <div class="cut-line"><span class="cut-icon">✂</span></div>
 <div class="talon"><img class="logo-t" src="${LOGO_BW}" alt="Joali"><div class="t-contact">${PIN} Gral. Flores 2568 Esq. Concepción Arenal<br>${TEL} 22083610 &nbsp; ${MOB} 095886536 — 099542516</div><div class="t-ret"><div class="t-rlbl">PROMETIDO:</div><div class="t-dates"><div><div class="t-dc">${fv(m.rDia)}</div><div class="dc-sub">DÍA</div></div><div><div class="t-dc">${fv(m.rMes)}</div><div class="dc-sub">MES</div></div><div><div class="t-dc" style="min-width:28px">${fv(m.rAnio)}</div><div class="dc-sub">AÑO</div></div></div></div><div class="t-totbox"><div class="t-trow"><span>Total &nbsp;$</span><span>${tot.toLocaleString('es-UY')}</span></div><div class="t-trow"><span>Seña &nbsp;$</span><span>${fv(m.senia)}</span></div><div class="t-trow"><span>Saldo $</span><span>${saldo.toLocaleString('es-UY')}</span></div></div><div class="t-nm-wrap"><div class="t-nm-lbl">Nombre:</div><div class="t-nm">${fv(m.nombre)}</div></div></div>
 </div>
