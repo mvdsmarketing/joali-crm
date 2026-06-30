@@ -305,7 +305,7 @@ html,body{height:100%;font-family:var(--f);background:var(--bg);color:var(--t1);
     <div class="workspace">
       <aside class="sidebar">
         <div class="sb-head">
-          <div class="sb-lbl">Clientes</div>
+          <div class="sb-lbl" style="display:flex;justify-content:space-between;align-items:center">Clientes <span id="client-count" style="color:var(--acc);font-weight:700">0</span></div>
           <div class="srch"><i class="ti ti-search"></i><input type="text" id="searchInput" placeholder="Buscar cliente…" oninput="filterList(this.value)"></div>
         </div>
         <div class="cl-list" id="clientList"></div>
@@ -678,6 +678,7 @@ function initials(n){return(n||'').split(' ').slice(0,2).map(w=>w[0]||'').join('
 function renderList(filter=''){
   const ul=gi('clientList');ul.innerHTML='';
   const f=filter.toLowerCase();
+  gi('client-count').textContent=clients.length;
   clients.filter(c=>!f||(c.nombre||'').toLowerCase().includes(f)||(c.ci||'').includes(f)).forEach(c=>{
     const el=document.createElement('div');
     el.className='cl-item'+(c.id===activeId?' active':'');
